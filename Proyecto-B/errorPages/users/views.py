@@ -3,6 +3,7 @@ from django.contrib.auth import login, authenticate, logout
 from .forms import CustomUserCreationForm, CustomUserLoginForm
 from django.contrib.auth.decorators import login_required
 import json
+from .message import message as Message
 
 def register_view(request):
     if request.method == 'POST':
@@ -28,7 +29,8 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    message = message("info", "Se ha cerrado session exitosamente", 200, "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8MIbugIhZBykSmQcR0QPcfnPUBOZQ6bm35w&s")
+    message = Message("info", "Se ha cerrado session exitosamente", 200, "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8MIbugIhZBykSmQcR0QPcfnPUBOZQ6bm35w&s")
+    print(json.dumps(message.to_dict()))
     return render(request, "login.html", {"message": json.dumps(message.to_dict())})
 
 @login_required

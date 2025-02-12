@@ -13,7 +13,7 @@ class CustomUserCreationForm(UserCreationForm):
         widget=forms.PasswordInput(
             attrs={
                 'class':'form-control',
-                'pattern':'^(?=.*\d)(?=.*[A-Z])(?=.*[!#$%&?]).{8,}$',
+                #'pattern':'^(?=.*\d)(?=.*[A-Z])(?=.*[!#$%&?]).{8,}$',
                 'placeholder': 'Ingrese su contraseña',
                 'title': 'Necesitas definir una contraseña segura, con al menos 8 caracteres, una mayúscula, un número y un símbolo (!, #, $, %, & o ?)',
                 'required': True
@@ -26,7 +26,7 @@ class CustomUserCreationForm(UserCreationForm):
         widget=forms.PasswordInput(
             attrs={
                 'class':'form-control',
-                'pattern':'^(?=.*\d)(?=.*[A-Z])(?=.*[!#$%&?]).{8,}$',
+                #'pattern':'^(?=.*\d)(?=.*[A-Z])(?=.*[!#$%&?]).{8,}$',
                 'placeholder': 'Ingrese de nuevo su contraseña',
                 'title': 'Necesitas definir una contraseña segura',
                 'required': True
@@ -106,7 +106,7 @@ class CustomUserCreationForm(UserCreationForm):
             ),
       
         }
-    
+    """
     def clean_email(self):
         email = self.cleaned_data.get('email')
         if not re.match('^[a-zA-Z0-9\\.)]+@utez\\.edu\\.mx$', email):
@@ -149,7 +149,7 @@ class CustomUserCreationForm(UserCreationForm):
         if password1 and password2 and password1 != password2:
             raise forms.ValidationError("Las contraseñas no coinciden")
         return password2
-        
+        """
 
 #Segundo formulario (inicio de sesión)
 class CustomUserLoginForm(AuthenticationForm):
