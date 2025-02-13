@@ -30,4 +30,5 @@ urlpatterns = [
     path('error_logs/', error_logs, name='error_logs'),
     path('api/error_logs/', get_error_logs, name='get_error_logs'),
     path('users/', include('users.urls')),
+    path('productos/', include('productos.urls'))
 ]
