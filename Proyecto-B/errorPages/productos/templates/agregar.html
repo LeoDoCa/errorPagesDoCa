@@ -15,23 +15,103 @@
 <body>
     <div class="container">
         <div class="row vh-100 justify-content-center align-items-center">
-            <div class="col-12 p-5 shadow">
-                <h1 class="text-center">Agregar producto</h1>
-                <form method="post">
+            <div class="col-6 p-5 border">
+                <h1 class="text-center mb-4">Agregar producto</h1>
+                <form method="post" id="productoForm">
                     {% csrf_token %} 
                     {{ form.as_p }}
                     <!-- Me genera todos los inputs del forms.py dentro de etiquetas <p> -->
                     <div class="row justify-content-center">
                         <div class="col-12 d-flex justify-content-end">
-                            <button class="btn btn-primary mt-3" style="width: 10%; height: 80%;" type="submit">Registrar</button>
+                            <button class="btn btn-primary mt-3" style="height: 80%;" type="submit">Registrar</button>
                         </div>
                         <button class="btn btn-primary mt-4" style="width: 30%;" onclick="window.location.href='/productos/ver/'">Ver productos</button>
                     </div>
                 </form>
+                <p id="mensaje"></p>
+            </div>
+            <div class="col-6 p-5 border">
+                <h1 class="text-center mb-5">Vista de productos</h1>
+                <div class="row" id="productos"></div>
             </div>
         </div>
     </div>
 
+    <script>
+        var form = document.getElementById('productoForm');
+        form.addEventListener('submit',function(event){
+            //Que no se va a mandar el form a la vista que hace render
+            event.preventDefault();
+
+            //Necesito la información
+            let formData = new FormData(this)
+
+            //Convertir el formData en JSON
+            let jsonData = {};
+            //En este contexto el value es el valor del input y el key es el name del input
+            formData.forEach((value,key)=> jsonData[key] = value);
+
+            //Enviar esta información al endpoint con POST
+            fetch('/productos/api/post/', {
+                method: 'POST',
+                headers:{
+                    'Content-Type':'application/json',
+                    'X-CSRFToken': getToken() //WIP
+                },
+                body: JSON.stringify(jsonData)
+            })
+            .then(response=> response.json())
+            .then(data => {
+                document.getElementById('mensaje').innerText = data.mensaje;
+                //Cargar los productos
+                cargarProductos();
+            })
+            .catch(error=>console.error('Error:', error));
+        });
+
+        //Funcion para obtener el csrf token en JS
+        function getToken(){
+            let cookieValue = null;
+            let cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                let cookie = cookies[i].trim();
+                if(cookie.startsWith('csrftoken=')){
+                    cookieValue = cookie.substring("csrftoken=".length, cookie.length)
+                    break;
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+    <script>
+        //Las funciones asincronas de fetch con then
+        function cargarProductos(){
+            //JS se va a intentar conectar con el end-point
+            fetch('/productos/api/get/')
+                .then(response => response.json())
+                .then(data => {
+                    let productosDiv = document.getElementById('productos');
+                    //Borrar el contenido
+                    productosDiv.innerHTML=''
+                    data.forEach(producto => {
+                        productosDiv.innerHTML += 
+                        `
+                        <div class="row  align-items-center">
+                            <div class="col-6 d-flex justify-content-end">
+                            <h5><strong>${producto.nombre}</strong> - $ ${producto.precio}</h5>
+                            </div>
+                            <div class="col-6">
+                            <img src="${producto.imagen}" class="ms-2" alt="X" width="100"/>
+                            </div>   
+                        </div>
+                        `
+                    });
+                })
+                .catch(error => console.error('Error: ', error))
+        }
+
+        cargarProductos();
+    </script>
 </body>
 
 </html>

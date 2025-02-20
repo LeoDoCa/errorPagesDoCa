@@ -32,3 +32,34 @@ def agregar_producto(request):
     else:
         form = productoForm()
     return render(request, 'agregar.html', {'form': form})
+
+
+#Función que agrega un producto con un objeto JSON
+
+import json
+def registrar_producto(request):
+    #Checar si nuestra request es de tipo POST
+    if request.method == 'POST':
+        #Quiere decir que si estoy manejando el request
+        try:
+            data = json.loads(request.body) #Parametro es un texto que deberia ser un JSON
+            producto = Producto.objects.create(
+                nombre=data['nombre'],
+                precio=data['precio'],
+                imagen=data['imagen']
+            ) #Create directamente mete el objeto en la bd
+            return JsonResponse(
+                {
+                    'mensaje': 'Registro exitoso',
+                    'id': producto.id
+                }, status=201
+            )
+        except Exception as e:
+            print(str(e))
+            return JsonResponse(
+                {'error': str(e)}, status = 400
+            )
+    #Si no es POST el request    
+    return JsonResponse(
+        {'error':'El método no está soportado'}, status=405
+    )
