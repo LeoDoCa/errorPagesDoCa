@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from .models import Producto
 from django.http import JsonResponse
 from .forms import productoForm
@@ -11,6 +11,7 @@ def lista_productos(request):
     #este diccionario fue creado al aire y no es seguro
     data = [
         {
+            'id': p.id,
             'nombre': p.nombre,
             'precio': p.precio,
             'imagen': p.imagen
@@ -62,4 +63,47 @@ def registrar_producto(request):
     #Si no es POST el request    
     return JsonResponse(
         {'error':'El método no está soportado'}, status=405
+    )
+
+#Funciones para el método PUT
+def actualizar_producto(request,id_producto):
+    if request.method == 'PUT':
+        producto = get_object_or_404(Producto, id=id_producto)
+        try:
+            #La información de la modificación del producto viene del body del request
+            data = json.loads(request.body)
+            producto.nombre = data.get('nombre', producto.nombre)
+            producto.precio = data.get('precio', producto.precio)
+            producto.imagen = data.get('imagen', producto.imagen)
+            producto.save()
+            return JsonResponse({'mensaje': 'Producto actualizado correctamente'}, status=200)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    return JsonResponse(
+        {'error':'El método no es PUT'}, status=405
+    )
+
+#Funciones para DELETE
+def borrar_producto(request, id_producto):
+    if request.method == 'DELETE':
+        producto = get_object_or_404(Producto, id=id_producto)
+        producto.delete() #<-- borra fisicamente el registro de la BD
+        return JsonResponse({'mensaje': 'Producto eliminado correctamente'}, status=200)
+    return JsonResponse(
+        {'error':'El método no es DELETE'}, status=405
+    )
+
+#Función adicional para GET de retornar un producto especifico
+def obtener_producto(request, id_producto):
+    if request.method == 'GET':
+        producto = get_object_or_404(Producto, id=id_producto)
+        data = {
+            "id": producto.id,
+            "nombre": producto.nombre,
+            "precio": producto.precio,
+            "imagen": producto.imagen
+        }
+        return JsonResponse(data, status=200)
+    return JsonResponse(
+        {'error':'El método no es GET'}, status=405
     )
