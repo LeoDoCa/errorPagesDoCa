@@ -1,109 +1,19 @@
-from django.shortcuts import get_object_or_404, render, redirect
+from rest_framework.renderers import JSONRenderer
+from rest_framework import viewsets
 from .models import Producto
-from django.http import JsonResponse
-from .forms import productoForm
+from .serializers import ProductoSerializer
 
-#Vista que devuelve los Productos como JSON
-def lista_productos(request):
-    #Obtener todos los objetos de productos de la base de datos
-    productos = Producto.objects.all()
-    #Vamos a guardar los datos en un dict
-    #este diccionario fue creado al aire y no es seguro
-    data = [
-        {
-            'id': p.id,
-            'nombre': p.nombre,
-            'precio': p.precio,
-            'imagen': p.imagen
-        }
-        for p in productos 
-    ]
-    return JsonResponse(data, safe=False)
+class ProductoViewset(viewsets.ModelViewSet):
+    #Esta variable me dice de donde saco el modelo y la información de base de datos
+    queryset = Producto.objects.all()
 
-def ver_productos(request):
-    return render(request, 'ver.html', status=200)
+    #Como serializar la información
+    serializer_class = ProductoSerializer
 
-def agregar_producto(request):
-    #checar si vengo del form
-    if request.method == 'POST':
-        form = productoForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('ver')
-    else:
-        form = productoForm()
-    return render(request, 'agregar.html', {'form': form})
+    #Como renderizar mis respuestas
+    renderer_classes = [JSONRenderer]
 
-
-#Función que agrega un producto con un objeto JSON
-
-import json
-def registrar_producto(request):
-    #Checar si nuestra request es de tipo POST
-    if request.method == 'POST':
-        #Quiere decir que si estoy manejando el request
-        try:
-            data = json.loads(request.body) #Parametro es un texto que deberia ser un JSON
-            producto = Producto.objects.create(
-                nombre=data['nombre'],
-                precio=data['precio'],
-                imagen=data['imagen']
-            ) #Create directamente mete el objeto en la bd
-            return JsonResponse(
-                {
-                    'mensaje': 'Registro exitoso',
-                    'id': producto.id
-                }, status=201
-            )
-        except Exception as e:
-            print(str(e))
-            return JsonResponse(
-                {'error': str(e)}, status = 400
-            )
-    #Si no es POST el request    
-    return JsonResponse(
-        {'error':'El método no está soportado'}, status=405
-    )
-
-#Funciones para el método PUT
-def actualizar_producto(request,id_producto):
-    if request.method == 'PUT':
-        producto = get_object_or_404(Producto, id=id_producto)
-        try:
-            #La información de la modificación del producto viene del body del request
-            data = json.loads(request.body)
-            producto.nombre = data.get('nombre', producto.nombre)
-            producto.precio = data.get('precio', producto.precio)
-            producto.imagen = data.get('imagen', producto.imagen)
-            producto.save()
-            return JsonResponse({'mensaje': 'Producto actualizado correctamente'}, status=200)
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
-    return JsonResponse(
-        {'error':'El método no es PUT'}, status=405
-    )
-
-#Funciones para DELETE
-def borrar_producto(request, id_producto):
-    if request.method == 'DELETE':
-        producto = get_object_or_404(Producto, id=id_producto)
-        producto.delete() #<-- borra fisicamente el registro de la BD
-        return JsonResponse({'mensaje': 'Producto eliminado correctamente'}, status=200)
-    return JsonResponse(
-        {'error':'El método no es DELETE'}, status=405
-    )
-
-#Función adicional para GET de retornar un producto especifico
-def obtener_producto(request, id_producto):
-    if request.method == 'GET':
-        producto = get_object_or_404(Producto, id=id_producto)
-        data = {
-            "id": producto.id,
-            "nombre": producto.nombre,
-            "precio": producto.precio,
-            "imagen": producto.imagen
-        }
-        return JsonResponse(data, status=200)
-    return JsonResponse(
-        {'error':'El método no es GET'}, status=405
-    )
+    #Permite filtrar que métodos HTTP se pueden usar
+    #GET, POST, PUT, DELETE
+    #Por defecto si no lo declaro se usan todos
+    #http_method_names = ['GET', 'POST']

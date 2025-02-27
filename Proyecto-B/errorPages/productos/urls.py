@@ -1,12 +1,10 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import SimpleRouter
 from .views import *
 
+router = SimpleRouter()
+router.register(r'api',ProductoViewset)
+
 urlpatterns = [
-    path('api/get/', lista_productos, name='lista'),
-    path('ver/', ver_productos, name='ver'),
-    path('agregar/', agregar_producto, name='agregar'),
-    path('api/post/', registrar_producto, name='post'),
-    path('api/put/<str:id_producto>/', actualizar_producto, name='put'),
-    path('api/delete/<str:id_producto>/', borrar_producto, name='delete'),
-    path('api/get/<str:id_producto>/', obtener_producto, name='get'),
+    path('', include(router.urls)),
 ]
