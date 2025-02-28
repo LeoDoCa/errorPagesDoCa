@@ -7,4 +7,5 @@ router.register(r'api', AlumnoViewset)
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('formulario/', formulario_alumno, name='formulario')
 ]
