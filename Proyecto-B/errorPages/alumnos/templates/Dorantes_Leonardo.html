@@ -15,9 +15,9 @@
     <title>Alumnos</title>
     <style>
         .tabla-container {
-            max-height: 60vh; 
-            overflow-y: auto; 
-            overflow-x: auto; 
+            max-height: 60vh;
+            overflow-y: auto;
+            overflow-x: auto;
         }
 
         #tablaAlumnos {
@@ -30,10 +30,11 @@
 <body>
     <div class="container">
         <div class="row vh-100 justify-content-center align-items-center">
-            <div class="col-6 p-5 border">
+            <div class="col-5 p-5 border">
                 <h1 class="text-center mb-4">Agregar alumno</h1>
+                <div id="formAlert" class="alert d-none"></div>
                 <form method="post" id="alumnoForm">
-                    {% csrf_token %} 
+                    {% csrf_token %}
                     {{ form.as_p }}
                     <input type="hidden" id="id_alumno">
                     <div class="row justify-content-center">
@@ -42,114 +43,175 @@
                         </div>
                     </div>
                 </form>
-                <p id="mensaje"></p>
             </div>
-            <div class="col-6 p-4 border">
-                <h1 class="text-center mb-5">Vista de alumnos</h1>
+            <div class="col-7 p-4 border">
+                <h1 class="text-center mb-3">Vista de alumnos</h1>
                 <div class="tabla-container">
-                    <table class="table table-striped table-bordered">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Apellido</th>
-                                <th>Edad</th>
-                                <th>Matrícula</th>
-                                <th>Correo</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tablaBody">
-                            
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Apellido</th>
+                                    <th>Edad</th>
+                                    <th>Matrícula</th>
+                                    <th>Correo</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaBody">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="listAlert" class="alert d-none"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            cargarAlumnos(); 
+        const alumnoForm = document.getElementById('alumnoForm');
+        const alumnoId = document.getElementById('id_alumno');
+        const formAlert = document.getElementById('formAlert');
+        const listAlert = document.getElementById('listAlert');
+        const alumnosBody = document.getElementById('tablaBody');
 
-            document.getElementById("alumnoForm").addEventListener("submit", function (event) {
-                event.preventDefault();
+        function mostrarAlerta(element, message, isSuccess = true) {
+            element.textContent = message;
+            element.classList.remove('d-none', 'alert-success', 'alert-danger');
 
-                let formData = new FormData(this);
-                let jsonData = {};
-                formData.forEach((value, key) => jsonData[key] = value);
+            if (isSuccess) {
+                element.classList.add('alert-success');
+            } else {
+                element.classList.add('alert-danger');
+            }
 
-                fetch('/alumnos/api/', {
+            setTimeout(() => {
+                element.classList.add('d-none');
+            }, 3000);
+        }
+
+        async function getAlumnos() {
+            try {
+                const response = await fetch('/alumnos/api/');
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status}`);
+                }
+                const alumnos = await response.json();
+                renderizarAlumnos(alumnos);
+            } catch (error) {
+                mostrarAlerta(listAlert, `Error al cargar los alumnos: ${error.message}`, false);
+                console.error('Error al obtener alumnos:', error);
+            }
+        }
+
+        function renderizarAlumnos(alumnos) {
+            alumnosBody.innerHTML = '';
+            alumnos.forEach(alumno => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${alumno.nombre}</td>
+                    <td>${alumno.apellido}</td>
+                    <td>${alumno.edad}</td>
+                    <td>${alumno.matricula}</td>
+                    <td>${alumno.correo}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm edit-btn" data-id="${alumno.id}">✏️</button>
+                        <button class="btn btn-danger btn-sm delete-btn" data-id="${alumno.id}">🗑️</button>
+                    </td>
+                `;
+                alumnosBody.appendChild(row);
+
+                row.querySelector('.edit-btn').addEventListener('click', () => cargarDatosAlumno(alumno));
+                row.querySelector('.delete-btn').addEventListener('click', () => deleteAlumno(alumno.id));
+            });
+        }
+
+        function cargarDatosAlumno(alumno) {
+            alumnoId.value = alumno.id;
+            document.getElementById('id_nombre').value = alumno.nombre;
+            document.getElementById('id_apellido').value = alumno.apellido;
+            document.getElementById('id_edad').value = alumno.edad;
+            document.getElementById('id_matricula').value = alumno.matricula;
+            document.getElementById('id_correo').value = alumno.correo;
+        }
+
+        async function createAlumno(formData) {
+            try {
+                const response = await fetch('/alumnos/api/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': getToken()
                     },
-                    body: JSON.stringify(jsonData)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("mensaje").innerText = data.mensaje;
-                    cargarAlumnos(); 
-                })
-                .catch(error => console.error('Error:', error));
-            });
-
-            function cargarAlumnos() {
-                fetch('/alumnos/api/')
-                    .then(response => response.json())
-                    .then(data => {
-                        let tablaBody = document.getElementById("tablaBody");
-                        tablaBody.innerHTML = ""; 
-                        data.forEach(alumno => {
-                            let fila = document.createElement("tr");
-                            fila.innerHTML = `
-                                <td>${alumno.nombre}</td>
-                                <td>${alumno.apellido}</td>
-                                <td>${alumno.edad}</td>
-                                <td>${alumno.matricula}</td>
-                                <td>${alumno.correo}</td>
-                                <td>
-                                    <button class="btn btn-warning btn-sm editar" data-id="${alumno.id}">✏️</button>
-                                    <button class="btn btn-danger btn-sm eliminar" data-id="${alumno.id}">🗑️</button>
-                                </td>
-                            `;
-                            tablaBody.appendChild(fila);
-                        });
-
-                        agregarEventosBotones();
-                    })
-                    .catch(error => console.error('Error:', error));
-            }
-
-            function agregarEventosBotones() {
-                document.querySelectorAll(".editar").forEach(boton => {
-                    boton.addEventListener("click", function () {
-                        let id = this.dataset.id;
-                        alert("Editar alumno con matrícula: " + id);
-                        // Aquí puedes abrir un formulario o modal para editar
-                    });
+                    body: JSON.stringify(formData)
                 });
-
-                document.querySelectorAll(".eliminar").forEach(boton => {
-                    boton.addEventListener("click", function () {
-                        let id = this.dataset.id;
-                        if (confirm("¿Seguro que deseas eliminar al alumno con matrícula " + id + "?")) {
-                            fetch(`/alumnos/api/${id}/`, { method: "DELETE" })
-                                .then(response => {
-                                    if (response.ok) {
-                                        alert("Alumno eliminado correctamente");
-                                        cargarAlumnos();
-                                    } else {
-                                        alert("Error al eliminar");
-                                    }
-                                });
-                        }
-                    });
-                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `Error: ${response.status}`);
+                }
+                
+                mostrarAlerta(formAlert, 'Alumno creado exitosamente');
+                resetearForm();
+                getAlumnos();
+            } catch (error) {
+                mostrarAlerta(formAlert, `Error al crear alumno: ${error.message}`, false);
+                console.error('Error al crear alumno:', error);
             }
+        }
 
-            // Función para obtener el CSRF token
-            function getToken() {
+        async function updateAlumno(id, formData) {
+            try {
+                const response = await fetch(`/alumnos/api/${id}/`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getToken()
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `Error: ${response.status}`);
+                }
+                
+                mostrarAlerta(formAlert, 'Alumno actualizado exitosamente');
+                resetearForm();
+                getAlumnos();
+            } catch (error) {
+                mostrarAlerta(formAlert, `Error al actualizar alumno: ${error.message}`, false);
+                console.error('Error al actualizar alumno:', error);
+            }
+        }
+
+        async function deleteAlumno(id) {
+            if (!confirm('¿Estás seguro que deseas eliminar este alumno?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/alumnos/api/${id}/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': getToken()
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status}`);
+                }
+                
+                mostrarAlerta(listAlert, 'Alumno eliminado exitosamente');
+                getAlumnos();
+            } catch (error) {
+                mostrarAlerta(listAlert, `Error al eliminar alumno: ${error.message}`, false);
+                console.error('Error al eliminar alumno:', error);
+            }
+        }
+
+        function getToken() {
                 let cookieValue = null;
                 let cookies = document.cookie.split(";");
                 for (let i = 0; i < cookies.length; i++) {
@@ -160,8 +222,34 @@
                     }
                 }
                 return cookieValue;
+        }
+
+        function resetearForm() {
+            alumnoForm.reset();
+            alumnoId.value = '';
+        }
+
+        alumnoForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                nombre: document.getElementById('id_nombre').value,
+                apellido: document.getElementById('id_apellido').value,
+                edad: parseInt(document.getElementById('id_edad').value),
+                matricula: document.getElementById('id_matricula').value,
+                correo: document.getElementById('id_correo').value
+            };
+            
+            const id = alumnoId.value;
+            
+            if (id) {
+                await updateAlumno(id, formData);
+            } else {
+                await createAlumno(formData);
             }
         });
+
+        document.addEventListener('DOMContentLoaded', getAlumnos);
     </script>
 
 </body>

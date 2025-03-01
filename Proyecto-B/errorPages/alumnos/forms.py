@@ -47,7 +47,8 @@ class alumnosForm(forms.ModelForm):
                 attrs={
                     'class': 'form-control',
                     'placeholder': 'Ingrese aqui el correo del alumno',
-                    'required': True
+                    'required': True,
+                    'pattern': '^[a-zA-Z0-9]+@utez\.edu\.mx$',
                 }
             ),
         }
