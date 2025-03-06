@@ -10,9 +10,55 @@
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
         crossorigin="anonymous"></script>
     <title>Agregar producto</title>
+    <style>
+        @keyframes fadeIn {
+            from{
+                opacity: 0; /*No se ve*/
+            }
+            to{
+                opacity: 1; /*Se ve*/
+            }
+        }
+        @keyframes slide {
+            from{
+                transform: translateX(100%);
+            }
+            to{
+                transform: translateX(0);
+            }
+        }
+        @keyframes zoomIn {
+            from{
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to{
+                transform: scale(1.0);
+                opacity: 1;
+            }
+        }
+        @keyframes zoomOut {
+            from{
+                transform: scale(1.0);
+                opacity: 1;
+            }
+            to{
+                transform: scale(0.8);
+                opacity: 0;
+            }
+        }
+
+        .page{
+            animation: slide 3.0s forwards;
+        }
+
+        .cardX{
+            animation: zoomIn 3.0s forwards;
+        }
+    </style>
 </head>
 
-<body>
+<body class="page">
     <div class="container">
         <div class="row vh-100 justify-content-center align-items-center">
             <div class="col-6 p-5 border">
@@ -35,7 +81,20 @@
                 <div class="row" id="productos"></div>
             </div>
         </div>
+        <a href="https://www.utez.edu.mx">Salir de la página</a>
     </div>
+
+    <script>
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function(event){
+                event.preventDefault();
+                document.body.style.animation = 'zoomOut 1.0s forwards';
+                setTimeout(()=>{
+                    window.location.href = this.href;
+                }, 1000)
+            });
+        });
+    </script>
 
     <script>
         var form = document.getElementById('productoForm');
@@ -96,7 +155,7 @@
                     data.forEach(producto => {
                         productosDiv.innerHTML += 
                         `
-                        <div class="row  align-items-center">
+                        <div class="row cardX align-items-center">
                             <div class="col-6 d-flex justify-content-end">
                             <h5><strong>${producto.nombre}</strong> - $ ${producto.precio}</h5>
                             </div>

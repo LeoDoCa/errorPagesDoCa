@@ -25,6 +25,52 @@
             white-space: nowrap;
         }
     </style>
+    <style>
+        @keyframes fadeIn {
+            from{
+                opacity: 0; /*No se ve*/
+            }
+            to{
+                opacity: 1; /*Se ve*/
+            }
+        }
+        @keyframes slide {
+            from{
+                transform: translateX(100%);
+            }
+            to{
+                transform: translateX(0);
+            }
+        }
+        @keyframes zoomIn {
+            from{
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to{
+                transform: scale(1.0);
+                opacity: 1;
+            }
+        }
+        @keyframes zoomOut {
+            from{
+                transform: scale(1.0);
+                opacity: 1;
+            }
+            to{
+                transform: scale(0.8);
+                opacity: 0;
+            }
+        }
+
+        .page{
+            animation: fadeIn 3.0s forwards;
+        }
+
+        .cardX{
+            animation: zoomIn 5.0s forwards;
+        }
+    </style>
 </head>
 
 <body>
@@ -32,7 +78,7 @@
         <h1>Gestión de Alumnos</h1>
     </header>
 
-    <main class="container">
+    <main class="container page">
         <div class="row vh-100 justify-content-center align-items-center">
             <div class="col-5 p-5 border">
                 <h1 class="text-center mb-4">Agregar alumno</h1>
@@ -52,7 +98,7 @@
                 <h1 class="text-center mb-4">Vista de alumnos</h1>
                 <div class="tabla-container">
                     <div class="table-responsive">
-                        <table class="table table-striped table-bordered">
+                        <table class="table table-striped table-bordered cardX">
                             <thead class="table-dark">
                                 <tr>
                                     <th>Nombre</th>
