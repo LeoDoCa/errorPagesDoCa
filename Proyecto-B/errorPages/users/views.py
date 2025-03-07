@@ -1,38 +1,28 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate, logout
-from .forms import CustomUserCreationForm, CustomUserLoginForm
-from django.contrib.auth.decorators import login_required
-import json
-from .message import message as Message
+from rest_framework.renderers import JSONRenderer
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+from .models import CustomUser
+from .serializers import *
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
-def register_view(request):
-    if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user) # Iniciar sesión después del registro
-            return redirect('home') # Redirigir a la página principal
-    else:
-        form = CustomUserCreationForm()
-    return render(request, 'register.html', {'form': form})
+#Hacer las vistas del API_REST de usuarios 
+class UserViewSets(viewsets.ModelViewSet):
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
+    renderer_classes = [JSONRenderer]
 
-def login_view(request):
-    if request.method == 'POST':
-        form = CustomUserLoginForm(data=request.POST)
-        if form.is_valid():
-            user = form.get_user()
-            login(request, user)
-            return redirect('home')
-    else:
-        form = CustomUserLoginForm()
-    return render(request, 'login.html', {'form': form})
+    #Si quieres agregar la parte de seguridad pon estas 2 variables
+    authentication_classes = [JWTAuthentication] #Si es un token
+    permission_classes = [IsAuthenticated]  #Si tengo la sesión activa
 
-def logout_view(request):
-    logout(request)
-    message = Message("info", "Se ha cerrado session exitosamente", 200, "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8MIbugIhZBykSmQcR0QPcfnPUBOZQ6bm35w&s")
-    print(json.dumps(message.to_dict()))
-    return render(request, "login.html", {"message": json.dumps(message.to_dict())})
+    #Que métodos va a proteger
+    def get_permissions(self):
+        if self.request.method in ['POST','PUT','DELETE']:
+            return [IsAuthenticated()]
+        return []
 
-@login_required
-def home_view(request):
-    return render(request, 'home.html')
+from rest_framework_simplejwt.views import TokenObtainPairView
+#Hacer una vista que me devuelva mi token
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+    

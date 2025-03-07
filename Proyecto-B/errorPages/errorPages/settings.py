@@ -44,8 +44,18 @@ INSTALLED_APPS = [
     'productos',
     'categorías',
     'rest_framework',
-    'alumnos'
+    'alumnos',
+    'rest_framework_simplejwt',
 ]
+
+#Configuración de AUTH
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES':(
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+AUTH_USER_MODEL = 'users.CustomUser'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -139,8 +149,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 HANDLER404 = 'app.views.error_404_view'
 
 HANDLER500 = 'app.views.error_500_view'
-
-AUTH_USER_MODEL = 'users.CustomUser'
 
 LOGIN_URL = '/users/login/'
 LOGIN_REDIRECT_URL = '/home' # Dónde irán los usuarios tras iniciar sesión
