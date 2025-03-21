@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 import Login from "./components/Login";
 import Navbar from "./components/Navbar";
+import CustomUserForm from "./components/NewUser";
 import AboutUs from "./pages/AboutUs";
 import NotFound from "./pages/404";
 import { AnimatePresence } from "framer-motion";
@@ -18,6 +19,7 @@ const AnimatedRoutes = () => {
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<CustomUserForm />} />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/" element={<Home />} />
         <Route path="*" element={<NotFound />} />{" "}
@@ -32,6 +34,8 @@ function Home() {
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const sesion = localStorage.getItem('accessToken');
+
 
   useEffect(() => {
     axios
@@ -57,6 +61,7 @@ function Home() {
   return (
     <div>
       <h1>Datos de la API desde Django</h1>
+      <h2>{sesion}</h2>
       <ul>
         {data.map((item) => (
           <li key={item.id}>{JSON.stringify(item)}</li>
@@ -72,7 +77,7 @@ function App() {
       <Navbar />
       <div className="container mt-4">
         <div className="row">
-          <div className="col-12">
+          <div className="col">
             <AnimatedRoutes />
           </div>
         </div>
