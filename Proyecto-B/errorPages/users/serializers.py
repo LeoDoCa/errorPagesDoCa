@@ -4,9 +4,18 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 #Serializador para API_REST
 class CustomUserSerializer(serializers.ModelSerializer):
-    class Meta: 
+    class Meta:
         model = CustomUser
-        fields = '__all__'
+        fields = [
+            'id',
+            'email',
+            'name',
+            'surname',
+            'control_number',
+            'age',
+            'tel',
+            'join_date'
+        ]
 
 #Serializador para los tokens
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):

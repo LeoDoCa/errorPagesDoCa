@@ -8,10 +8,14 @@ import {
 } from "react-router-dom";
 import Login from "./components/Login";
 import Navbar from "./components/Navbar";
+import UserDataTable from "./components/UserDataTable";
 import CustomUserForm from "./components/NewUser";
 import AboutUs from "./pages/AboutUs";
 import NotFound from "./pages/404";
-import { AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import "react-toastify/dist/ReactToastify.css";
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -31,50 +35,59 @@ const AnimatedRoutes = () => {
 
 //Home component
 function Home() {
-  const [data, setData] = useState([]);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const sesion = localStorage.getItem('accessToken');
-
+  const[sesion, setSesion] = useState(false);
 
   useEffect(() => {
-    axios
-      .get("http://127.0.0.1:8000/users/api/")
-      .then((response) => {
-        setData(response.data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        setError("Error al obtener los datos" + error);
-        setLoading(false);
-      });
-  }, []);
-
-  if (loading) {
-    return <div>Cargando...</div>;
-  }
-
-  if (error) {
-    return <div>{error}</div>;
-  }
+    const item = localStorage.getItem('accessToken');
+    setSesion(item !== null) // Si el item existe
+  }, [])
 
   return (
-    <div>
-      <h1>Datos de la API desde Django</h1>
-      <h2>{sesion}</h2>
-      <ul>
-        {data.map((item) => (
-          <li key={item.id}>{JSON.stringify(item)}</li>
-        ))}
-      </ul>
+    <div className="d-flex justify-content-center align-items-center vh-100">
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0, transition: { duration: 0.5 } }}
+        exit={{ opacity: 0, y: -50, transition: { duration: 0.5 } }}
+        className="page"
+      >
+        {sesion ? (
+          <div>
+            <h1 className="mb-5">Bienvenido usuario logueado</h1>
+            <div className="p-1 mw-100">
+              <UserDataTable />
+            </div>
+          </div>
+        ) : (
+          <h4>Por favor inicia sesión para ver más información</h4>
+        )}
+      </motion.div>
     </div>
   );
 }
 
 function App() {
+  const [sesion, setSesion] = useState(false);
+
+  const checkSession = () => {
+    const item = localStorage.getItem("accessToken");
+    setSesion(item !== null);
+  };
+
+  useEffect(() => {
+    checkSession();
+    
+    window.addEventListener('storage', checkSession);
+    window.addEventListener('sessionChange', checkSession);
+    
+    return () => {
+      window.removeEventListener('storage', checkSession);
+      window.removeEventListener('sessionChange', checkSession);
+    };
+  }, []);
+
   return (
     <Router>
-      <Navbar />
+      <Navbar sesion={sesion} setSesion={setSesion} />
       <div className="container mt-4">
         <div className="row">
           <div className="col">

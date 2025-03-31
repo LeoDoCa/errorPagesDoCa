@@ -13,6 +13,7 @@ const Login = ({ onLoginSuccess }) => {
     e.preventDefault();
     try {
       await login(username, password);
+      window.dispatchEvent(new Event('sessionChange'));
       nav("/");
     } catch (err) {
       setError("Credenciales incorrectas");
