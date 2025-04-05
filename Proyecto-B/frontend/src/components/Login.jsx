@@ -63,13 +63,17 @@ const Login = ({ onLoginSuccess }) => {
             </button>
           </form>
           <div className="text-center">
-            <strong>
-              ¿No tienes una cuenta?<br></br>
-            </strong>
-            <Link className="" to="/register">
-              Registrate
-            </Link>
-          </div>
+                  <strong>¿No tienes una cuenta?<br></br></strong>
+                  <Link className="" to="/register">
+                    Registrate
+                  </Link>
+                </div>
+                <div className="text-center">
+                  <strong>¿No recuerdas tu contraseña?<br /></strong>
+                  <Link className="" to="/recuperar">
+                    Recuperar contraseña
+                  </Link>
+                </div>
         </div>
       </div>
     </motion.div>

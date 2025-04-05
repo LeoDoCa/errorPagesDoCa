@@ -7,6 +7,8 @@ import {
   useLocation,
 } from "react-router-dom";
 import Login from "./components/Login";
+import Recuperar from "./components/Recuperar";
+import ResetPassword from "./components/ResetPassword";
 import Navbar from "./components/Navbar";
 import UserDataTable from "./components/UserDataTable";
 import CustomUserForm from "./components/NewUser";
@@ -26,14 +28,14 @@ const AnimatedRoutes = () => {
         <Route path="/register" element={<CustomUserForm />} />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/" element={<Home />} />
+        <Route path="/recuperar" element={<Recuperar />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="*" element={<NotFound />} />{" "}
-        {/*Es para 404 personalizado */}
       </Routes>
     </AnimatePresence>
   );
 };
 
-//Home component
 function Home() {
   const[sesion, setSesion] = useState(false);
 
